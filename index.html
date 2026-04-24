@@ -419,7 +419,7 @@ body {
   <div class="panel" id="panel-inventory">
     <div class="section-heading">
       Gift inventory
-      <button class="add-btn" onclick="openModal('gift-modal')">+ Add</button>
+      <button class="add-btn" onclick="openGiftModal()">+ Add</button>
     </div>
     <div class="search-row">
       <input class="search-input" id="inv-search" placeholder="Search gifts..." oninput="renderInventory()" style="flex:1;">
@@ -444,7 +444,10 @@ body {
 
   <!-- UPCOMING PANEL -->
   <div class="panel" id="panel-upcoming">
-    <div class="section-heading">Upcoming</div>
+    <div class="section-heading">
+      Upcoming
+      <button class="add-btn" onclick="openOccasionModal()">+ Add</button>
+    </div>
     <div id="upcoming-list"></div>
   </div>
 
@@ -603,7 +606,7 @@ body {
   <div class="modal-sheet">
     <div class="modal-handle"></div>
     <div class="modal-header">
-      <div class="modal-title">Add to inventory</div>
+      <div class="modal-title" id="gift-modal-title">Add to inventory</div>
       <button class="modal-close" onclick="closeModal('gift-modal')">✕</button>
     </div>
     <div class="modal-body">
@@ -643,7 +646,7 @@ body {
       <div class="field"><label>Notes</label><textarea id="g-notes" placeholder="Color, size, why you bought it, occasion ideas..."></textarea></div>
     </div>
     <div class="modal-footer">
-      <button class="save-btn" onclick="saveGift()">Save gift</button>
+      <button class="save-btn" id="gift-save-btn" onclick="saveGift()">Save gift</button>
       <button class="cancel-btn" onclick="closeModal('gift-modal')">Cancel</button>
     </div>
   </div>
@@ -678,7 +681,61 @@ body {
   </div>
 </div>
 
-<!-- VIEW PERSON MODAL -->
+<!-- OCCASION MODAL -->
+<div class="modal-overlay" id="occasion-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="occasion-modal-title">Add occasion</div>
+      <button class="modal-close" onclick="closeModal('occasion-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Occasion type *</label>
+        <select id="oc-type">
+          <option value="">Select...</option>
+          <option>Baby shower</option>
+          <option>Barbecue / cookout</option>
+          <option>Birthday party</option>
+          <option>Christmas</option>
+          <option>Easter</option>
+          <option>Graduation</option>
+          <option>Holiday gathering</option>
+          <option>Housewarming</option>
+          <option>Mother's Day</option>
+          <option>Father's Day</option>
+          <option>Valentine's Day</option>
+          <option>Wedding / bridal shower</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field"><label>Event name / label</label><input id="oc-name" placeholder="e.g. Adriana's Baby Shower, Summer BBQ at Wesly's"></div>
+      <div class="field"><label>Date *</label><input id="oc-date" type="date"></div>
+      <div class="field"><label>Associated person (optional)</label>
+        <select id="oc-person"><option value="">— no one specific —</option></select>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="oc-notes" placeholder="Gift ideas, what to bring, budget..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="save-btn" id="occasion-save-btn" onclick="saveOccasion()">Save occasion</button>
+      <button class="cancel-btn" onclick="closeModal('occasion-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW OCCASION MODAL -->
+<div class="modal-overlay" id="view-occasion-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="vo-content"></div>
+    <div class="vp-actions">
+      <button class="vp-del-btn" onclick="deleteOccasion()">Delete</button>
+      <button class="vp-edit-btn" onclick="editOccasion()">Edit</button>
+    </div>
+    <div style="padding: 0 20px 4px;">
+      <button class="cancel-btn" onclick="closeModal('view-occasion-modal')">Close</button>
+    </div>
+  </div>
+</div>
 <div class="modal-overlay" id="view-person-modal">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
@@ -694,14 +751,17 @@ body {
 </div>
 
 <script>
-let people = [], gifts = [], cards = [];
+let people = [], gifts = [], cards = [], occasions = [];
 let editingPersonIdx = null, viewingPersonIdx = null;
+let editingGiftIdx = null;
+let editingOccasionIdx = null, viewingOccasionIdx = null;
 let chipData = { colors: [], interests: [] };
 let deferredInstallPrompt = null;
 
 try { people = JSON.parse(localStorage.getItem('ghq_people') || '[]'); } catch(e){}
 try { gifts = JSON.parse(localStorage.getItem('ghq_gifts') || '[]'); } catch(e){}
 try { cards = JSON.parse(localStorage.getItem('ghq_cards') || '[]'); } catch(e){}
+try { occasions = JSON.parse(localStorage.getItem('ghq_occasions') || '[]'); } catch(e){}
 
 const AVATARS = [
   {bg:'#EEEDFE',fg:'#3C3489'},{bg:'#E1F5EE',fg:'#085041'},
@@ -714,6 +774,7 @@ function save() {
   try { localStorage.setItem('ghq_people', JSON.stringify(people)); } catch(e){}
   try { localStorage.setItem('ghq_gifts', JSON.stringify(gifts)); } catch(e){}
   try { localStorage.setItem('ghq_cards', JSON.stringify(cards)); } catch(e){}
+  try { localStorage.setItem('ghq_occasions', JSON.stringify(occasions)); } catch(e){}
   updateStats();
 }
 
@@ -724,8 +785,8 @@ function updateStats() {
 }
 
 function openModal(id) {
-  if(id === 'gift-modal') {
-    const sel = document.getElementById('g-assigned');
+  if(id === 'gift-modal' || id === 'occasion-modal') {
+    const sel = document.getElementById(id === 'gift-modal' ? 'g-assigned' : 'oc-person');
     sel.innerHTML = '<option value="">— no one yet —</option>' + people.map(p=>`<option>${escHtml(p.name)}</option>`).join('');
   }
   document.getElementById(id).classList.add('open');
@@ -883,6 +944,32 @@ function editPerson() {
   openPersonModal(viewingPersonIdx);
 }
 
+function openGiftModal(idx) {
+  editingGiftIdx = (idx !== undefined) ? idx : null;
+  const sel = document.getElementById('g-assigned');
+  sel.innerHTML = '<option value="">— no one yet —</option>' + people.map(p=>`<option>${escHtml(p.name)}</option>`).join('');
+  if(editingGiftIdx !== null) {
+    const g = gifts[editingGiftIdx];
+    document.getElementById('gift-modal-title').textContent = 'Edit gift';
+    document.getElementById('gift-save-btn').textContent = 'Update gift';
+    document.getElementById('g-name').value = g.name || '';
+    document.getElementById('g-cat').value = g.cat || '';
+    document.getElementById('g-source').value = g.source || '';
+    document.getElementById('g-value').value = g.value || '';
+    document.getElementById('g-status').value = g.status || 'floating';
+    document.getElementById('g-notes').value = g.notes || '';
+    sel.value = g.assigned || '';
+  } else {
+    document.getElementById('gift-modal-title').textContent = 'Add to inventory';
+    document.getElementById('gift-save-btn').textContent = 'Save gift';
+    ['g-name','g-value','g-notes'].forEach(id => document.getElementById(id).value='');
+    ['g-cat','g-source'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('g-status').value='floating';
+    sel.value = '';
+  }
+  document.getElementById('gift-modal').classList.add('open');
+}
+
 function renderInventory() {
   const q = (document.getElementById('inv-search')?.value||'').toLowerCase();
   const f = document.getElementById('inv-filter')?.value||'';
@@ -909,6 +996,7 @@ function renderInventory() {
       <div class="gift-meta">${g.source?escHtml(g.source):''}${g.source&&g.value?' · ':''}${g.value?`~$${g.value}`:''}</div>
       ${g.notes?`<div style="font-size:13px;color:var(--ink-3);margin-top:6px;">${escHtml(g.notes)}</div>`:''}
       <div class="gift-actions">
+        <button class="action-btn" onclick="openGiftModal(${idx})">Edit</button>
         ${g.status!=='given'?`<button class="action-btn" onclick="markGiven(${idx})">Mark as given</button>`:''}
         <button class="action-btn danger" onclick="deleteGift(${idx})">Remove</button>
       </div>
@@ -919,18 +1007,21 @@ function renderInventory() {
 function saveGift() {
   const name = (document.getElementById('g-name').value||'').trim();
   if(!name) { alert('Item name is required'); return; }
-  gifts.push({
+  const g = {
     name, cat: document.getElementById('g-cat').value,
     source: document.getElementById('g-source').value,
     value: document.getElementById('g-value').value,
     status: document.getElementById('g-status').value,
     assigned: document.getElementById('g-assigned').value,
     notes: document.getElementById('g-notes').value
-  });
-  ['g-name','g-value','g-notes'].forEach(id => document.getElementById(id).value='');
-  ['g-cat','g-source'].forEach(id => document.getElementById(id).value='');
-  document.getElementById('g-status').value='floating';
-  document.getElementById('g-assigned').value='';
+  };
+  if(editingGiftIdx !== null) {
+    gifts[editingGiftIdx] = g;
+    showToast('Gift updated', 'success');
+  } else {
+    gifts.push(g);
+  }
+  editingGiftIdx = null;
   save(); renderInventory(); closeModal('gift-modal');
 }
 
@@ -974,36 +1065,165 @@ function deleteCard(i) { cards.splice(i,1); save(); renderCards(); }
 
 function renderUpcoming() {
   const now = new Date();
+  now.setHours(0,0,0,0);
   const upcoming = [];
+
   people.forEach(p => {
     if(!p.bday) return;
     const [m,d] = p.bday.split('/').map(Number);
     if(!m||!d) return;
     let next = new Date(now.getFullYear(), m-1, d);
-    if(next <= now) next = new Date(now.getFullYear()+1, m-1, d);
+    if(next < now) next = new Date(now.getFullYear()+1, m-1, d);
     const diff = Math.ceil((next-now)/864e5);
-    upcoming.push({ person: p.name, idx: people.indexOf(p), label:'Birthday', diff, interests: p.interests||[], hasGift: gifts.some(g=>g.assigned===p.name&&g.status!=='given') });
+    upcoming.push({
+      type: 'birthday', person: p.name, personIdx: people.indexOf(p),
+      label: 'Birthday', date: next, diff,
+      interests: p.interests||[],
+      hasGift: gifts.some(g=>g.assigned===p.name&&g.status!=='given')
+    });
   });
-  upcoming.sort((a,b) => a.diff-b.diff);
+
+  occasions.forEach((o, idx) => {
+    const oDate = new Date(o.date + 'T00:00:00');
+    const diff = Math.ceil((oDate-now)/864e5);
+    upcoming.push({
+      type: 'occasion', idx, label: o.type,
+      name: o.name || o.type,
+      person: o.person || '',
+      date: oDate, diff,
+      notes: o.notes || '',
+      hasGift: o.person ? gifts.some(g=>g.assigned===o.person&&g.status!=='given') : false
+    });
+  });
+
+  upcoming.sort((a,b) => a.diff - b.diff);
+
   const el = document.getElementById('upcoming-list');
   if(!upcoming.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-icon">&#127881;</div><div class="empty-title">No upcoming occasions</div><div class="empty-sub">Add birthdays to people's profiles and they'll show up here with a countdown</div></div>`;
+    el.innerHTML = `<div class="empty"><div class="empty-icon">&#127881;</div><div class="empty-title">No upcoming occasions</div><div class="empty-sub">Birthdays are pulled from People profiles automatically. Tap + Add for one-off events.</div></div>`;
     return;
   }
-  el.innerHTML = upcoming.slice(0,15).map(o => {
+
+  const OCCASION_ICONS = {
+    'Baby shower':'&#128118;', 'Barbecue / cookout':'&#127828;',
+    'Birthday party':'&#127874;', 'Christmas':'&#127876;',
+    'Easter':'&#129414;', 'Graduation':'&#127891;',
+    'Holiday gathering':'&#127979;', 'Housewarming':'&#127968;',
+    "Mother's Day":'&#127801;', "Father's Day":'&#128084;',
+    "Valentine's Day":'&#10084;', 'Wedding / bridal shower':'&#128149;',
+    'Other':'&#127873;'
+  };
+
+  el.innerHTML = upcoming.map(o => {
     const urgency = o.diff<=7 ? 'urgency-soon' : o.diff<=30 ? 'urgency-near' : '';
-    const dayLabel = o.diff===0 ? 'Today!' : o.diff===1 ? 'Tomorrow' : `In ${o.diff} days`;
-    const dc = o.diff<=7 ? 'badge-coral' : o.diff<=30 ? 'badge-amber' : 'badge-gray';
-    return `<div class="upcoming-card ${urgency}" onclick="viewPerson(${o.idx});switchTabByName('people')">
-      <div class="avatar" style="width:40px;height:40px;font-size:13px;${avatarStyle(o.idx)}">${initials(o.person)}</div>
-      <div class="upcoming-info">
-        <div class="upcoming-name">${escHtml(o.person)}</div>
-        <div class="upcoming-occ">${o.label} · ${o.hasGift?'<span style="color:var(--teal)">Gift ready</span>':'<span style="color:var(--coral)">No gift yet</span>'}</div>
-        ${o.interests.length?`<div class="upcoming-interests">Into: ${o.interests.slice(0,4).map(escHtml).join(', ')}</div>`:''}
-      </div>
-      <span class="badge ${dc}">${dayLabel}</span>
-    </div>`;
+    const dayLabel = o.diff<0 ? 'Past' : o.diff===0 ? 'Today!' : o.diff===1 ? 'Tomorrow' : `In ${o.diff} days`;
+    const dc = o.diff<0 ? 'badge-gray' : o.diff<=7 ? 'badge-coral' : o.diff<=30 ? 'badge-amber' : 'badge-gray';
+
+    if(o.type === 'birthday') {
+      return `<div class="upcoming-card ${urgency}" onclick="viewPerson(${o.personIdx});switchTabByName('people')">
+        <div class="avatar" style="width:40px;height:40px;font-size:13px;${avatarStyle(o.personIdx)}">${initials(o.person)}</div>
+        <div class="upcoming-info">
+          <div class="upcoming-name">${escHtml(o.person)}</div>
+          <div class="upcoming-occ">Birthday · ${o.hasGift?'<span style="color:var(--teal)">Gift ready</span>':'<span style="color:var(--coral)">No gift yet</span>'}</div>
+          ${o.interests.length?`<div class="upcoming-interests">Into: ${o.interests.slice(0,4).map(escHtml).join(', ')}</div>`:''}
+        </div>
+        <span class="badge ${dc}">${dayLabel}</span>
+      </div>`;
+    } else {
+      const icon = OCCASION_ICONS[o.label] || '&#127873;';
+      const dateStr = o.date.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+      return `<div class="upcoming-card ${urgency}" onclick="viewOccasion(${o.idx})">
+        <div style="width:40px;height:40px;border-radius:50%;background:var(--warm-white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${icon}</div>
+        <div class="upcoming-info">
+          <div class="upcoming-name">${escHtml(o.name)}</div>
+          <div class="upcoming-occ">${escHtml(o.label)}${o.person?' · '+escHtml(o.person):''} · ${dateStr}</div>
+          ${o.hasGift?`<div class="upcoming-interests" style="color:var(--teal)">Gift ready for ${escHtml(o.person)}</div>`:''}
+          ${o.notes?`<div class="upcoming-interests">${escHtml(o.notes)}</div>`:''}
+        </div>
+        <span class="badge ${dc}">${dayLabel}</span>
+      </div>`;
+    }
   }).join('');
+}
+
+function openOccasionModal(idx) {
+  editingOccasionIdx = (idx !== undefined) ? idx : null;
+  const sel = document.getElementById('oc-person');
+  sel.innerHTML = '<option value="">— no one specific —</option>' + people.map(p=>`<option>${escHtml(p.name)}</option>`).join('');
+  if(editingOccasionIdx !== null) {
+    const o = occasions[editingOccasionIdx];
+    document.getElementById('occasion-modal-title').textContent = 'Edit occasion';
+    document.getElementById('occasion-save-btn').textContent = 'Update occasion';
+    document.getElementById('oc-type').value = o.type || '';
+    document.getElementById('oc-name').value = o.name || '';
+    document.getElementById('oc-date').value = o.date || '';
+    document.getElementById('oc-notes').value = o.notes || '';
+    sel.value = o.person || '';
+  } else {
+    document.getElementById('occasion-modal-title').textContent = 'Add occasion';
+    document.getElementById('occasion-save-btn').textContent = 'Save occasion';
+    document.getElementById('oc-type').value = '';
+    document.getElementById('oc-name').value = '';
+    document.getElementById('oc-date').value = '';
+    document.getElementById('oc-notes').value = '';
+    sel.value = '';
+  }
+  document.getElementById('occasion-modal').classList.add('open');
+}
+
+function saveOccasion() {
+  const type = document.getElementById('oc-type').value;
+  const date = document.getElementById('oc-date').value;
+  if(!type) { alert('Occasion type is required'); return; }
+  if(!date) { alert('Date is required'); return; }
+  const o = {
+    type, name: document.getElementById('oc-name').value,
+    date, person: document.getElementById('oc-person').value,
+    notes: document.getElementById('oc-notes').value
+  };
+  if(editingOccasionIdx !== null) {
+    occasions[editingOccasionIdx] = o;
+    showToast('Occasion updated', 'success');
+  } else {
+    occasions.push(o);
+    showToast('Occasion added', 'success');
+  }
+  editingOccasionIdx = null;
+  save(); renderUpcoming(); closeModal('occasion-modal');
+}
+
+function viewOccasion(idx) {
+  viewingOccasionIdx = idx;
+  const o = occasions[idx];
+  const oDate = new Date(o.date + 'T00:00:00');
+  const dateStr = oDate.toLocaleDateString('en-US', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  document.getElementById('vo-content').innerHTML = `
+    <div class="vp-hero">
+      <div style="width:52px;height:52px;border-radius:50%;background:var(--warm-white);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:22px;">&#127873;</div>
+      <div>
+        <div class="vp-name">${escHtml(o.name||o.type)}</div>
+        <div class="vp-rel">${escHtml(o.type)}</div>
+      </div>
+    </div>
+    <div class="vp-section">
+      <div class="vp-row"><span class="vp-label">Date</span><span class="vp-val">${dateStr}</span></div>
+      ${o.person?`<div class="vp-row"><span class="vp-label">For</span><span class="vp-val">${escHtml(o.person)}</span></div>`:''}
+      ${o.notes?`<div class="vp-row"><span class="vp-label">Notes</span><span class="vp-val">${escHtml(o.notes)}</span></div>`:''}
+    </div>
+  `;
+  document.getElementById('view-occasion-modal').classList.add('open');
+}
+
+function deleteOccasion() {
+  if(viewingOccasionIdx === null) return;
+  if(!confirm('Remove this occasion?')) return;
+  occasions.splice(viewingOccasionIdx, 1);
+  save(); renderUpcoming(); closeModal('view-occasion-modal');
+}
+
+function editOccasion() {
+  closeModal('view-occasion-modal');
+  openOccasionModal(viewingOccasionIdx);
 }
 
 function switchTab(tab, btn) {
@@ -1056,7 +1276,7 @@ function exportData() {
   const payload = {
     version: 1,
     exportedAt: new Date().toISOString(),
-    people, gifts, cards
+    people, gifts, cards, occasions
   };
   const json = JSON.stringify(payload, null, 2);
   const blob = new Blob([json], { type: 'application/json' });
@@ -1083,11 +1303,13 @@ function handleImportFile(e) {
       const pCount = data.people.length;
       const gCount = data.gifts.length;
       const cCount = data.cards.length;
-      const confirmed = confirm(`This will replace your current data with:\n\n• ${pCount} people\n• ${gCount} gifts\n• ${cCount} card types\n\nContinue?`);
+      const oCount = (data.occasions||[]).length;
+      const confirmed = confirm(`This will replace your current data with:\n\n• ${pCount} people\n• ${gCount} gifts\n• ${cCount} card types\n• ${oCount} occasions\n\nContinue?`);
       if(!confirmed) { e.target.value=''; return; }
       people = data.people;
       gifts = data.gifts;
       cards = data.cards;
+      occasions = data.occasions || [];
       save();
       renderPeople();
       renderDataSummary();
@@ -1105,7 +1327,7 @@ function clearAllData() {
   if(!confirmed) return;
   const confirmed2 = confirm('Last chance — delete everything?');
   if(!confirmed2) return;
-  people = []; gifts = []; cards = [];
+  people = []; gifts = []; cards = []; occasions = [];
   save(); renderPeople(); renderDataSummary();
   showToast('All data cleared', 'error');
 }
