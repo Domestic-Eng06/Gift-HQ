@@ -1006,6 +1006,19 @@ function renderUpcoming() {
   }).join('');
 }
 
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  const panel = document.getElementById('panel-' + tab);
+  if(panel) panel.classList.add('active');
+  if(tab === 'people') renderPeople();
+  if(tab === 'inventory') renderInventory();
+  if(tab === 'cards') renderCards();
+  if(tab === 'upcoming') renderUpcoming();
+  if(tab === 'settings') renderDataSummary();
+}
+
 function switchTabByName(tab) {
   const btns = document.querySelectorAll('.tab-btn');
   const tabs = ['people','inventory','cards','upcoming','settings'];
