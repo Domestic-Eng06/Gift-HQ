@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Gift HQ">
+<meta name="theme-color" content="#1a1a18">
+<title>Gift HQ</title>
+<link rel="manifest" href="./manifest.json">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #faf9f7;
+  --warm-white: #f4f1ec;
+  --ink: #1a1a18;
+  --ink-2: #3d3d39;
+  --ink-3: #6b6b65;
+  --ink-4: #9a9a92;
+  --border: #e2ded6;
+  --border-2: #ccc8bf;
+  --teal: #1D9E75;
+  --teal-light: #E1F5EE;
+  --teal-dark: #085041;
+  --amber: #BA7517;
+  --amber-light: #FAEEDA;
+  --amber-dark: #633806;
+  --coral: #D85A30;
+  --coral-light: #FAECE7;
+  --coral-dark: #712B13;
+  --purple: #534AB7;
+  --purple-light: #EEEDFE;
+  --purple-dark: #3C3489;
+  --pink-light: #FBEAF0;
+  --pink-dark: #72243E;
+  --gray-light: #F1EFE8;
+  --gray-dark: #444441;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--cream);
+  color: var(--ink);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+}
+
+/* Install banner */
+#install-banner {
+  display: none;
+  position: fixed;
+  bottom: calc(var(--safe-bottom) + 80px);
+  left: 16px; right: 16px;
+  background: var(--ink);
+  color: var(--cream);
+  border-radius: 16px;
+  padding: 14px 16px;
+  z-index: 1000;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+}
+#install-banner.show { display: flex; }
+#install-banner .ib-text { flex: 1; }
+#install-banner .ib-title { font-size: 14px; font-weight: 500; }
+#install-banner .ib-sub { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+#install-banner button { font-family: var(--font-body); cursor: pointer; border-radius: 10px; font-size: 13px; font-weight: 500; padding: 8px 14px; }
+#install-banner .ib-yes { background: var(--cream); color: var(--ink); border: none; }
+#install-banner .ib-no { background: transparent; color: var(--ink-4); border: none; }
+
+/* Top bar */
+.topbar {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--cream);
+  border-bottom: 1px solid var(--border);
+  padding: calc(var(--safe-top) + 12px) 20px 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.topbar-logo { font-family: var(--font-display); font-size: 22px; letter-spacing: -0.02em; }
+.topbar-sub { font-size: 11px; color: var(--ink-4); margin-top: 1px; }
+.stats-row { display: flex; gap: 6px; }
+.stat-pill {
+  background: var(--warm-white); border: 1px solid var(--border);
+  border-radius: 20px; padding: 4px 10px;
+  font-size: 12px; color: var(--ink-2);
+  display: flex; align-items: center; gap: 4px;
+}
+.stat-pill strong { font-weight: 500; }
+
+/* Tab bar */
+.tabbar {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 100;
+  background: var(--cream);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+}
+.tab-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;
+  padding: 10px 4px 8px;
+  border: none; background: transparent; cursor: pointer;
+  color: var(--ink-4); font-family: var(--font-body); font-size: 10px;
+  transition: color 0.15s;
+}
+.tab-btn.active { color: var(--ink); }
+.tab-icon { width: 22px; height: 22px; }
+.tab-btn.active .tab-icon path, .tab-btn.active .tab-icon rect, .tab-btn.active .tab-icon circle { fill: var(--ink); }
+.tab-icon path, .tab-icon rect, .tab-icon circle { fill: var(--ink-4); transition: fill 0.15s; }
+
+/* Main content */
+.main { padding: 20px 16px 100px; max-width: 640px; margin: 0 auto; }
+
+/* Panels */
+.panel { display: none; }
+.panel.active { display: block; }
+
+/* Section heading */
+.section-heading {
+  font-family: var(--font-display); font-size: 20px; letter-spacing: -0.01em;
+  margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between;
+}
+
+/* Search bar */
+.search-row { display: flex; gap: 8px; margin-bottom: 16px; }
+.search-input {
+  flex: 1; height: 42px; border: 1px solid var(--border-2);
+  border-radius: 12px; padding: 0 14px; font-family: var(--font-body);
+  font-size: 14px; background: var(--warm-white); color: var(--ink);
+  outline: none;
+}
+.search-input:focus { border-color: var(--ink); }
+.filter-select {
+  height: 42px; border: 1px solid var(--border-2); border-radius: 12px;
+  padding: 0 10px; font-family: var(--font-body); font-size: 13px;
+  background: var(--warm-white); color: var(--ink); outline: none;
+}
+
+/* Add button */
+.add-btn {
+  height: 42px; padding: 0 18px; border-radius: 12px;
+  background: var(--ink); color: var(--cream);
+  border: none; font-family: var(--font-body); font-size: 14px; font-weight: 500;
+  cursor: pointer; white-space: nowrap; transition: opacity 0.15s;
+}
+.add-btn:active { opacity: 0.8; }
+
+/* Person card */
+.person-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.person-card:active { border-color: var(--border-2); background: var(--warm-white); }
+.avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 500; font-size: 15px; flex-shrink: 0;
+}
+.person-info { flex: 1; min-width: 0; }
+.person-name { font-weight: 500; font-size: 15px; }
+.person-meta { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+.person-chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+.person-side { text-align: right; flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+
+/* Gift card */
+.gift-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+}
+.gift-header { display: flex; align-items: flex-start; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+.gift-name { font-weight: 500; font-size: 15px; flex: 1; }
+.gift-meta { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+.gift-actions { display: flex; gap: 6px; margin-top: 10px; }
+.action-btn {
+  font-family: var(--font-body); font-size: 12px; padding: 6px 12px;
+  border-radius: 8px; cursor: pointer; transition: opacity 0.15s;
+  border: 1px solid var(--border-2); background: var(--warm-white); color: var(--ink);
+}
+.action-btn.danger { color: var(--coral); border-color: var(--coral-light); background: var(--coral-light); }
+.action-btn:active { opacity: 0.7; }
+
+/* Card stock item */
+.card-item {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+}
+.card-item-info { flex: 1; }
+.card-item-name { font-weight: 500; font-size: 15px; }
+.card-item-desc { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+.qty-control { display: flex; align-items: center; gap: 8px; }
+.qty-btn {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border-2);
+  background: var(--warm-white); font-size: 18px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-family: var(--font-body); color: var(--ink);
+}
+.qty-num { font-size: 15px; font-weight: 500; min-width: 24px; text-align: center; }
+
+/* Upcoming card */
+.upcoming-card {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px 16px; margin-bottom: 10px;
+  display: flex; align-items: center; gap: 12px;
+}
+.upcoming-info { flex: 1; min-width: 0; }
+.upcoming-name { font-weight: 500; font-size: 15px; }
+.upcoming-occ { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+.upcoming-interests { font-size: 11px; color: var(--ink-4); margin-top: 4px; }
+
+/* Badges */
+.badge {
+  font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 20px;
+  display: inline-flex; align-items: center; white-space: nowrap;
+}
+.badge-teal { background: var(--teal-light); color: var(--teal-dark); }
+.badge-amber { background: var(--amber-light); color: var(--amber-dark); }
+.badge-coral { background: var(--coral-light); color: var(--coral-dark); }
+.badge-purple { background: var(--purple-light); color: var(--purple-dark); }
+.badge-pink { background: var(--pink-light); color: var(--pink-dark); }
+.badge-gray { background: var(--gray-light); color: var(--gray-dark); }
+
+/* Chips */
+.chip-row { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.chip {
+  font-size: 11px; padding: 3px 9px; border-radius: 20px;
+  background: var(--warm-white); border: 1px solid var(--border); color: var(--ink-2);
+  display: inline-flex; align-items: center; gap: 5px;
+}
+.chip-x { color: var(--ink-4); cursor: pointer; font-size: 13px; line-height: 1; }
+
+/* Empty state */
+.empty {
+  text-align: center; padding: 48px 20px; color: var(--ink-4);
+}
+.empty-icon { font-size: 36px; margin-bottom: 12px; }
+.empty-title { font-size: 15px; font-weight: 500; color: var(--ink-3); margin-bottom: 6px; }
+.empty-sub { font-size: 13px; }
+
+/* MODALS */
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(10,10,8,0.5); align-items: flex-end;
+}
+.modal-overlay.open { display: flex; }
+.modal-sheet {
+  background: var(--cream); width: 100%; border-radius: 24px 24px 0 0;
+  padding: 0 0 calc(var(--safe-bottom) + 16px);
+  max-height: 92dvh; overflow-y: auto;
+}
+.modal-handle {
+  width: 40px; height: 4px; border-radius: 2px;
+  background: var(--border-2); margin: 12px auto 0;
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-title { font-family: var(--font-display); font-size: 20px; }
+.modal-close {
+  width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border);
+  background: var(--warm-white); color: var(--ink-3); font-size: 16px;
+  display: flex; align-items: center; justify-content: center; cursor: pointer;
+}
+.modal-body { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+/* Form fields */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: 12px; font-weight: 500; color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.06em; }
+.field input, .field select, .field textarea {
+  font-family: var(--font-body); font-size: 15px; color: var(--ink);
+  background: white; border: 1px solid var(--border-2);
+  border-radius: 12px; padding: 12px 14px; outline: none; width: 100%;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--ink); }
+.field textarea { resize: vertical; min-height: 72px; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.chip-input-row { display: flex; gap: 8px; }
+.chip-input-row input { flex: 1; }
+.chip-add-btn {
+  height: 48px; padding: 0 16px; border-radius: 12px; border: 1px solid var(--border-2);
+  background: var(--warm-white); font-family: var(--font-body); font-size: 14px;
+  color: var(--ink); cursor: pointer; white-space: nowrap;
+}
+.modal-footer { padding: 0 20px 4px; display: flex; flex-direction: column; gap: 8px; }
+.save-btn {
+  width: 100%; height: 50px; border-radius: 14px;
+  background: var(--ink); color: var(--cream);
+  border: none; font-family: var(--font-body); font-size: 15px; font-weight: 500;
+  cursor: pointer; transition: opacity 0.15s;
+}
+.save-btn:active { opacity: 0.8; }
+.cancel-btn {
+  width: 100%; height: 44px; border-radius: 14px;
+  background: transparent; color: var(--ink-3);
+  border: 1px solid var(--border); font-family: var(--font-body); font-size: 15px;
+  cursor: pointer;
+}
+
+/* View person modal */
+.vp-hero { padding: 20px; display: flex; align-items: center; gap: 14px; }
+.vp-hero .avatar { width: 60px; height: 60px; font-size: 20px; }
+.vp-name { font-family: var(--font-display); font-size: 22px; }
+.vp-rel { font-size: 13px; color: var(--ink-4); }
+.vp-section { padding: 0 20px 14px; }
+.vp-section-title { font-size: 11px; font-weight: 500; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 8px; }
+.vp-row { display: flex; justify-content: space-between; font-size: 14px; padding: 6px 0; border-bottom: 1px solid var(--border); }
+.vp-row:last-child { border-bottom: none; }
+.vp-label { color: var(--ink-4); }
+.vp-val { color: var(--ink); text-align: right; max-width: 60%; }
+.vp-actions { padding: 12px 20px; display: flex; gap: 8px; }
+.vp-edit-btn {
+  flex: 1; height: 46px; border-radius: 12px; border: 1px solid var(--border-2);
+  background: var(--warm-white); font-family: var(--font-body); font-size: 14px; color: var(--ink); cursor: pointer;
+}
+.vp-del-btn {
+  flex: 1; height: 46px; border-radius: 12px; border: 1px solid var(--coral-light);
+  background: var(--coral-light); font-family: var(--font-body); font-size: 14px; color: var(--coral-dark); cursor: pointer;
+}
+
+/* Upcoming urgency colors */
+.urgency-soon { border-left: 3px solid var(--coral); }
+.urgency-near { border-left: 3px solid var(--amber); }
+
+/* Toast notification */
+.toast {
+  position: fixed; bottom: calc(var(--safe-bottom) + 88px); left: 50%; transform: translateX(-50%) translateY(20px);
+  background: var(--ink); color: var(--cream); border-radius: 24px;
+  padding: 10px 20px; font-size: 14px; font-weight: 500;
+  white-space: nowrap; z-index: 500; opacity: 0;
+  transition: opacity 0.2s, transform 0.2s; pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--teal-dark); }
+.toast.error { background: var(--coral-dark); }
+
+/* Settings panel */
+.settings-block {
+  background: white; border: 1px solid var(--border);
+  border-radius: 16px; overflow: hidden; margin-bottom: 16px;
+}
+.settings-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px; border-bottom: 1px solid var(--border); gap: 12px;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-info { flex: 1; }
+.settings-row-label { font-weight: 500; font-size: 15px; }
+.settings-row-sub { font-size: 12px; color: var(--ink-4); margin-top: 2px; }
+.settings-action-btn {
+  font-family: var(--font-body); font-size: 13px; font-weight: 500;
+  padding: 8px 16px; border-radius: 10px; cursor: pointer;
+  border: 1px solid var(--border-2); background: var(--warm-white); color: var(--ink);
+  white-space: nowrap; flex-shrink: 0;
+}
+.settings-action-btn.teal { background: var(--teal-light); color: var(--teal-dark); border-color: var(--teal-light); }
+.settings-action-btn.danger { background: var(--coral-light); color: var(--coral-dark); border-color: var(--coral-light); }
+.data-summary {
+  background: var(--warm-white); border-radius: 12px; padding: 14px 16px;
+  font-size: 13px; color: var(--ink-3); line-height: 1.7; margin-bottom: 16px;
+}
+.data-summary strong { color: var(--ink); font-weight: 500; }
+</style>
+</head>
+<body>
+
+<!-- Install Banner -->
+<div id="install-banner">
+  <div class="ib-text">
+    <div class="ib-title">Add Gift HQ to your home screen</div>
+    <div class="ib-sub">Works offline · Saves your data</div>
+  </div>
+  <button class="ib-yes" id="install-yes">Install</button>
+  <button class="ib-no" id="install-no">Not now</button>
+</div>
+
+<!-- Top Bar -->
+<div class="topbar">
+  <div>
+    <div class="topbar-logo">Gift HQ</div>
+    <div class="topbar-sub">Your thoughtful giving system</div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-pill"><strong id="stat-people">0</strong> people</div>
+    <div class="stat-pill"><strong id="stat-gifts">0</strong> gifts</div>
+    <div class="stat-pill"><strong id="stat-cards">0</strong> cards</div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main">
+
+  <!-- PEOPLE PANEL -->
+  <div class="panel active" id="panel-people">
+    <div class="section-heading">
+      People
+      <button class="add-btn" onclick="openModal('person-modal')">+ Add</button>
+    </div>
+    <div class="search-row">
+      <input class="search-input" id="people-search" placeholder="Search by name or relationship..." oninput="renderPeople()">
+    </div>
+    <div id="people-list"></div>
+  </div>
+
+  <!-- INVENTORY PANEL -->
+  <div class="panel" id="panel-inventory">
+    <div class="section-heading">
+      Gift inventory
+      <button class="add-btn" onclick="openModal('gift-modal')">+ Add</button>
+    </div>
+    <div class="search-row">
+      <input class="search-input" id="inv-search" placeholder="Search gifts..." oninput="renderInventory()" style="flex:1;">
+      <select class="filter-select" id="inv-filter" onchange="renderInventory()">
+        <option value="">All</option>
+        <option value="floating">Floating</option>
+        <option value="assigned">Assigned</option>
+        <option value="given">Given</option>
+      </select>
+    </div>
+    <div id="inventory-list"></div>
+  </div>
+
+  <!-- CARDS PANEL -->
+  <div class="panel" id="panel-cards">
+    <div class="section-heading">
+      Card stock
+      <button class="add-btn" onclick="openModal('card-modal')">+ Add</button>
+    </div>
+    <div id="cards-list"></div>
+  </div>
+
+  <!-- UPCOMING PANEL -->
+  <div class="panel" id="panel-upcoming">
+    <div class="section-heading">Upcoming</div>
+    <div id="upcoming-list"></div>
+  </div>
+
+  <!-- SETTINGS PANEL -->
+  <div class="panel" id="panel-settings">
+    <div class="section-heading">Settings</div>
+
+    <div class="data-summary" id="data-summary">Loading...</div>
+
+    <p style="font-size: 11px; font-weight: 500; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px;">Backup & restore</p>
+    <div class="settings-block">
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-label">Export my data</div>
+          <div class="settings-row-sub">Download a backup file to your device</div>
+        </div>
+        <button class="settings-action-btn teal" onclick="exportData()">Export</button>
+      </div>
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-label">Import data</div>
+          <div class="settings-row-sub">Restore from a backup file</div>
+        </div>
+        <button class="settings-action-btn" onclick="document.getElementById('import-file-input').click()">Import</button>
+      </div>
+    </div>
+
+    <p style="font-size: 11px; font-weight: 500; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 10px; margin-top: 20px;">Danger zone</p>
+    <div class="settings-block">
+      <div class="settings-row">
+        <div class="settings-row-info">
+          <div class="settings-row-label">Clear all data</div>
+          <div class="settings-row-sub">Permanently delete all people, gifts, and cards</div>
+        </div>
+        <button class="settings-action-btn danger" onclick="clearAllData()">Clear all</button>
+      </div>
+    </div>
+
+    <p style="font-size: 12px; color: var(--ink-4); text-align: center; margin-top: 24px; line-height: 1.6;">
+      Gift HQ saves your data locally on this device.<br>Export regularly to keep a backup safe.
+    </p>
+  </div>
+
+</div>
+
+<!-- Bottom Tab Bar -->
+<div class="tabbar">
+  <button class="tab-btn active" onclick="switchTab('people',this)">
+    <svg class="tab-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="9" cy="7" r="4" fill="#9a9a92"/>
+      <path d="M2 21c0-4 3.13-7 7-7s7 3 7 7" stroke="#9a9a92" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="#9a9a92" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M22 21c0-3.5-2-6.5-6-6.5" stroke="#9a9a92" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+    People
+  </button>
+  <button class="tab-btn" onclick="switchTab('inventory',this)">
+    <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="11" width="18" height="11" rx="2" fill="#9a9a92"/>
+      <rect x="2" y="7" width="20" height="5" rx="2" fill="#9a9a92" opacity="0.6"/>
+      <path d="M12 7V18" stroke="white" stroke-width="1.5"/>
+      <path d="M8 7c0-2.2 1.8-4 4-4s4 1.8 4 4" stroke="#9a9a92" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    Gifts
+  </button>
+  <button class="tab-btn" onclick="switchTab('cards',this)">
+    <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <rect x="2" y="5" width="20" height="15" rx="3" fill="#9a9a92"/>
+      <rect x="2" y="9" width="20" height="3" fill="white" opacity="0.3"/>
+      <rect x="6" y="14" width="5" height="2" rx="1" fill="white" opacity="0.5"/>
+    </svg>
+    Cards
+  </button>
+  <button class="tab-btn" onclick="switchTab('upcoming',this)">
+    <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <rect x="3" y="4" width="18" height="18" rx="3" fill="#9a9a92"/>
+      <rect x="3" y="4" width="18" height="6" rx="3" fill="#9a9a92"/>
+      <rect x="3" y="7" width="18" height="3" fill="#9a9a92"/>
+      <path d="M8 2v4M16 2v4" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+      <rect x="7" y="13" width="3" height="3" rx="1" fill="white" opacity="0.7"/>
+      <rect x="11" y="13" width="3" height="3" rx="1" fill="white" opacity="0.7"/>
+      <rect x="15" y="13" width="3" height="3" rx="1" fill="white" opacity="0.4"/>
+    </svg>
+    Upcoming
+  </button>
+  <button class="tab-btn" onclick="switchTab('settings',this)">
+    <svg class="tab-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="3" fill="#9a9a92"/>
+      <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="#9a9a92" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+    </svg>
+    Settings
+  </button>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Hidden file input for import -->
+<input type="file" id="import-file-input" accept=".json" style="display:none" onchange="handleImportFile(event)">
+
+<!-- PERSON MODAL -->
+<div class="modal-overlay" id="person-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title" id="person-modal-title">Add person</div>
+      <button class="modal-close" onclick="closeModal('person-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field-row">
+        <div class="field"><label>Name *</label><input id="p-name" placeholder="Full name"></div>
+        <div class="field"><label>Relationship</label>
+          <select id="p-rel">
+            <option value="">Select...</option>
+            <option>Mom</option><option>Dad</option><option>Sister</option><option>Brother</option>
+            <option>Husband</option><option>Child</option><option>Aunt</option><option>Uncle</option>
+            <option>Cousin</option><option>Best friend</option><option>Friend</option>
+            <option>Coworker</option><option>Mentor</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Birthday (MM/DD)</label><input id="p-bday" placeholder="e.g. 06/15"></div>
+        <div class="field"><label>Sizes</label><input id="p-size" placeholder="e.g. M top, 8.5 shoe"></div>
+      </div>
+      <div class="field"><label>Address</label><input id="p-addr" placeholder="City, State or full address"></div>
+      <div class="field"><label>Dietary / allergies</label><input id="p-diet" placeholder="e.g. gluten-free, nut allergy"></div>
+      <div class="field">
+        <label>Favorite colors</label>
+        <div class="chip-input-row">
+          <input id="p-color-input" placeholder="Type a color, press Add">
+          <button class="chip-add-btn" onclick="addChip('p-color-input','p-color-chips','colors')">Add</button>
+        </div>
+        <div class="chip-row" id="p-color-chips"></div>
+      </div>
+      <div class="field">
+        <label>Current interests</label>
+        <div class="chip-input-row">
+          <input id="p-int-input" placeholder="e.g. journaling, hiking, sneakers">
+          <button class="chip-add-btn" onclick="addChip('p-int-input','p-int-chips','interests')">Add</button>
+        </div>
+        <div class="chip-row" id="p-int-chips"></div>
+      </div>
+      <div class="field"><label>Last gift given & when</label><input id="p-lastgift" placeholder="e.g. Candle set — Christmas 2024"></div>
+      <div class="field"><label>Notes</label><textarea id="p-notes" placeholder="What makes them tick, running wish list, anything..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="savePerson()">Save person</button>
+      <button class="cancel-btn" onclick="closeModal('person-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- GIFT MODAL -->
+<div class="modal-overlay" id="gift-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Add to inventory</div>
+      <button class="modal-close" onclick="closeModal('gift-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Item name *</label><input id="g-name" placeholder="What is it?"></div>
+      <div class="field-row">
+        <div class="field"><label>Category</label>
+          <select id="g-cat">
+            <option value="">Select...</option>
+            <option>Candle / home</option><option>Skincare / beauty</option>
+            <option>Clothing / accessories</option><option>Books</option>
+            <option>Food / treats</option><option>Tech / gadgets</option>
+            <option>Jewelry</option><option>Art / decor</option>
+            <option>Experience</option><option>Kids / baby</option>
+            <option>Thrifted find</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Approx. value ($)</label><input id="g-value" type="number" placeholder="0" inputmode="numeric"></div>
+      </div>
+      <div class="field"><label>How you got it</label>
+        <select id="g-source">
+          <option value="">Select...</option>
+          <option>Thrifted</option><option>Bought with someone in mind</option>
+          <option>Impulse buy</option><option>Gifted to me</option><option>Made it</option>
+        </select>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Status</label>
+          <select id="g-status">
+            <option value="floating">Floating (unassigned)</option>
+            <option value="assigned">Assigned to someone</option>
+          </select>
+        </div>
+        <div class="field"><label>Assigned to</label>
+          <select id="g-assigned"><option value="">— no one yet —</option></select>
+        </div>
+      </div>
+      <div class="field"><label>Notes</label><textarea id="g-notes" placeholder="Color, size, why you bought it, occasion ideas..."></textarea></div>
+    </div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveGift()">Save gift</button>
+      <button class="cancel-btn" onclick="closeModal('gift-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- CARD MODAL -->
+<div class="modal-overlay" id="card-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">Add to card stock</div>
+      <button class="modal-close" onclick="closeModal('card-modal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="field"><label>Card type *</label>
+        <select id="c-type">
+          <option value="">Select...</option>
+          <option>Birthday</option><option>Holiday / Christmas</option>
+          <option>Just because</option><option>Thank you</option>
+          <option>Congratulations</option><option>Baby shower</option>
+          <option>Wedding / anniversary</option><option>Sympathy</option>
+          <option>Blank / all-purpose</option>
+        </select>
+      </div>
+      <div class="field"><label>Quantity</label><input id="c-qty" type="number" value="1" min="1" inputmode="numeric"></div>
+      <div class="field"><label>Description / vibe</label><input id="c-desc" placeholder="e.g. floral, funny, elegant, minimalist..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="save-btn" onclick="saveCard()">Save cards</button>
+      <button class="cancel-btn" onclick="closeModal('card-modal')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- VIEW PERSON MODAL -->
+<div class="modal-overlay" id="view-person-modal">
+  <div class="modal-sheet">
+    <div class="modal-handle"></div>
+    <div id="vp-content"></div>
+    <div class="vp-actions">
+      <button class="vp-del-btn" onclick="deletePerson()">Delete</button>
+      <button class="vp-edit-btn" onclick="editPerson()">Edit profile</button>
+    </div>
+    <div style="padding: 0 20px 4px;">
+      <button class="cancel-btn" onclick="closeModal('view-person-modal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let people = [], gifts = [], cards = [];
+let editingPersonIdx = null, viewingPersonIdx = null;
+let chipData = { colors: [], interests: [] };
+let deferredInstallPrompt = null;
+
+try { people = JSON.parse(localStorage.getItem('ghq_people') || '[]'); } catch(e){}
+try { gifts = JSON.parse(localStorage.getItem('ghq_gifts') || '[]'); } catch(e){}
+try { cards = JSON.parse(localStorage.getItem('ghq_cards') || '[]'); } catch(e){}
+
+const AVATARS = [
+  {bg:'#EEEDFE',fg:'#3C3489'},{bg:'#E1F5EE',fg:'#085041'},
+  {bg:'#FBEAF0',fg:'#72243E'},{bg:'#FAEEDA',fg:'#633806'},
+  {bg:'#E6F1FB',fg:'#0C447C'},{bg:'#FAECE7',fg:'#712B13'},
+  {bg:'#EAF3DE',fg:'#27500A'},{bg:'#FCEBEB',fg:'#791F1F'}
+];
+
+function save() {
+  try { localStorage.setItem('ghq_people', JSON.stringify(people)); } catch(e){}
+  try { localStorage.setItem('ghq_gifts', JSON.stringify(gifts)); } catch(e){}
+  try { localStorage.setItem('ghq_cards', JSON.stringify(cards)); } catch(e){}
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('stat-people').textContent = people.length;
+  document.getElementById('stat-gifts').textContent = gifts.filter(g => g.status !== 'given').length;
+  document.getElementById('stat-cards').textContent = cards.reduce((s,c) => s + (parseInt(c.qty)||0), 0);
+}
+
+function openModal(id) {
+  if(id === 'gift-modal') {
+    const sel = document.getElementById('g-assigned');
+    sel.innerHTML = '<option value="">— no one yet —</option>' + people.map(p=>`<option>${escHtml(p.name)}</option>`).join('');
+  }
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+function escHtml(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function initials(name) { return String(name).split(' ').map(w=>w[0]||'').join('').toUpperCase().slice(0,2); }
+function avatarStyle(i) { const c = AVATARS[i % AVATARS.length]; return `background:${c.bg};color:${c.fg};`; }
+
+function addChip(inputId, chipsId, key) {
+  const input = document.getElementById(inputId);
+  const val = (input.value || '').trim();
+  if(!val || chipData[key].includes(val)) { input.value=''; return; }
+  chipData[key].push(val);
+  renderChips(chipsId, key);
+  input.value = '';
+}
+
+function removeChip(key, i, chipsId) {
+  chipData[key].splice(i, 1);
+  renderChips(chipsId, key);
+}
+
+function renderChips(chipsId, key) {
+  document.getElementById(chipsId).innerHTML = chipData[key].map((v,i) =>
+    `<span class="chip">${escHtml(v)}<span class="chip-x" onclick="removeChip('${key}',${i},'${chipsId}')">✕</span></span>`
+  ).join('');
+}
+
+document.getElementById('p-color-input').addEventListener('keydown', e => { if(e.key==='Enter') { e.preventDefault(); addChip('p-color-input','p-color-chips','colors'); }});
+document.getElementById('p-int-input').addEventListener('keydown', e => { if(e.key==='Enter') { e.preventDefault(); addChip('p-int-input','p-int-chips','interests'); }});
+
+function openPersonModal(idx) {
+  editingPersonIdx = (idx !== undefined) ? idx : null;
+  chipData = { colors: [], interests: [] };
+  document.getElementById('p-color-chips').innerHTML = '';
+  document.getElementById('p-int-chips').innerHTML = '';
+  if(editingPersonIdx !== null) {
+    const p = people[editingPersonIdx];
+    document.getElementById('person-modal-title').textContent = 'Edit person';
+    ['name','rel','bday','addr','size','diet','lastgift','notes'].forEach(k => {
+      const el = document.getElementById('p-'+k);
+      if(el) el.value = p[k] || '';
+    });
+    chipData.colors = [...(p.colors||[])];
+    chipData.interests = [...(p.interests||[])];
+    renderChips('p-color-chips','colors');
+    renderChips('p-int-chips','interests');
+  } else {
+    document.getElementById('person-modal-title').textContent = 'Add person';
+    ['name','bday','addr','size','diet','lastgift','notes'].forEach(k => { const el = document.getElementById('p-'+k); if(el) el.value=''; });
+    document.getElementById('p-rel').value = '';
+  }
+  openModal('person-modal');
+}
+
+function savePerson() {
+  const name = (document.getElementById('p-name').value||'').trim();
+  if(!name) { alert('Name is required'); return; }
+  const p = {
+    name,
+    rel: document.getElementById('p-rel').value,
+    bday: document.getElementById('p-bday').value,
+    addr: document.getElementById('p-addr').value,
+    size: document.getElementById('p-size').value,
+    diet: document.getElementById('p-diet').value,
+    lastgift: document.getElementById('p-lastgift').value,
+    notes: document.getElementById('p-notes').value,
+    colors: [...chipData.colors],
+    interests: [...chipData.interests]
+  };
+  if(editingPersonIdx !== null) { people[editingPersonIdx] = p; } else { people.push(p); }
+  save(); renderPeople(); closeModal('person-modal');
+}
+
+function renderPeople() {
+  const q = (document.getElementById('people-search')?.value||'').toLowerCase();
+  const filtered = people.filter(p => p.name.toLowerCase().includes(q) || (p.rel||'').toLowerCase().includes(q));
+  const el = document.getElementById('people-list');
+  if(!filtered.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">&#127876;</div><div class="empty-title">${people.length?'No results':'No people yet'}</div><div class="empty-sub">${people.length?'Try a different search':'Tap + Add to start building your gift list'}</div></div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(p => {
+    const idx = people.indexOf(p);
+    const giftsReady = gifts.filter(g => g.assigned === p.name && g.status !== 'given').length;
+    const next = getNextBday(p);
+    return `<div class="person-card" onclick="viewPerson(${idx})">
+      <div class="avatar" style="${avatarStyle(idx)}">${initials(p.name)}</div>
+      <div class="person-info">
+        <div class="person-name">${escHtml(p.name)}</div>
+        <div class="person-meta">${escHtml(p.rel||'')}${p.rel&&p.bday?' · ':''}${p.bday?'B-day '+escHtml(p.bday):''}</div>
+        ${p.interests&&p.interests.length ? `<div class="chip-row">${p.interests.slice(0,3).map(t=>`<span class="chip">${escHtml(t)}</span>`).join('')}${p.interests.length>3?`<span style="font-size:11px;color:var(--ink-4);">+${p.interests.length-3}</span>`:''}</div>` : ''}
+      </div>
+      <div class="person-side">
+        ${giftsReady ? `<span class="badge badge-teal">${giftsReady} gift${giftsReady>1?'s':''}</span>` : ''}
+        ${next ? `<span style="font-size:11px;color:var(--ink-4);">${next}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getNextBday(p) {
+  if(!p.bday) return null;
+  const [m,d] = p.bday.split('/').map(Number);
+  if(!m||!d) return null;
+  const now = new Date();
+  let next = new Date(now.getFullYear(), m-1, d);
+  if(next <= now) next = new Date(now.getFullYear()+1, m-1, d);
+  const diff = Math.ceil((next-now)/(864e5));
+  if(diff<=7) return `${diff}d away!`;
+  if(diff<=30) return `${diff} days`;
+  return null;
+}
+
+function viewPerson(idx) {
+  viewingPersonIdx = idx;
+  const p = people[idx];
+  const assignedGifts = gifts.filter(g => g.assigned === p.name && g.status !== 'given');
+  const givenGifts = gifts.filter(g => g.assigned === p.name && g.status === 'given');
+  document.getElementById('vp-content').innerHTML = `
+    <div class="vp-hero">
+      <div class="avatar" style="width:60px;height:60px;font-size:20px;${avatarStyle(idx)}">${initials(p.name)}</div>
+      <div>
+        <div class="vp-name">${escHtml(p.name)}</div>
+        <div class="vp-rel">${escHtml(p.rel||'No relationship set')}</div>
+      </div>
+    </div>
+    <div class="vp-section">
+      ${[
+        ['Birthday', p.bday],['Address', p.addr],['Sizes', p.size],
+        ['Dietary', p.diet],['Last gift', p.lastgift]
+      ].filter(r=>r[1]).map(r=>`<div class="vp-row"><span class="vp-label">${r[0]}</span><span class="vp-val">${escHtml(r[1])}</span></div>`).join('')}
+    </div>
+    ${p.colors&&p.colors.length?`<div class="vp-section"><div class="vp-section-title">Favorite colors</div><div class="chip-row">${p.colors.map(c=>`<span class="chip">${escHtml(c)}</span>`).join('')}</div></div>`:''}
+    ${p.interests&&p.interests.length?`<div class="vp-section"><div class="vp-section-title">Current interests</div><div class="chip-row">${p.interests.map(c=>`<span class="chip">${escHtml(c)}</span>`).join('')}</div></div>`:''}
+    ${p.notes?`<div class="vp-section"><div class="vp-section-title">Notes</div><div style="font-size:14px;color:var(--ink-3);line-height:1.5;">${escHtml(p.notes)}</div></div>`:''}
+    ${assignedGifts.length?`<div class="vp-section"><div class="vp-section-title">Gifts ready for them</div>${assignedGifts.map(g=>`<div class="vp-row"><span class="vp-label">${escHtml(g.name)}</span><span class="badge badge-teal">ready</span></div>`).join('')}</div>`:''}
+    ${givenGifts.length?`<div class="vp-section"><div class="vp-section-title">Gift history</div>${givenGifts.map(g=>`<div class="vp-row"><span class="vp-label">${escHtml(g.name)}</span><span style="font-size:12px;color:var(--ink-4);">given</span></div>`).join('')}</div>`:''}
+  `;
+  openModal('view-person-modal');
+}
+
+function deletePerson() {
+  if(viewingPersonIdx === null) return;
+  if(!confirm(`Remove ${people[viewingPersonIdx].name}?`)) return;
+  people.splice(viewingPersonIdx, 1);
+  save(); renderPeople(); closeModal('view-person-modal');
+}
+
+function editPerson() {
+  closeModal('view-person-modal');
+  openPersonModal(viewingPersonIdx);
+}
+
+function renderInventory() {
+  const q = (document.getElementById('inv-search')?.value||'').toLowerCase();
+  const f = document.getElementById('inv-filter')?.value||'';
+  const filtered = gifts.filter(g => {
+    const mq = g.name.toLowerCase().includes(q) || (g.notes||'').toLowerCase().includes(q) || (g.assigned||'').toLowerCase().includes(q);
+    const mf = !f || g.status === f;
+    return mq && mf;
+  });
+  const el = document.getElementById('inventory-list');
+  if(!filtered.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">&#127873;</div><div class="empty-title">${gifts.length?'No results':'No gifts yet'}</div><div class="empty-sub">Log things you\'ve thrifted or bought ahead of time</div></div>`;
+    return;
+  }
+  el.innerHTML = filtered.map(g => {
+    const idx = gifts.indexOf(g);
+    const sc = g.status==='floating'?'badge-amber':g.status==='assigned'?'badge-teal':'badge-gray';
+    const sl = g.status==='floating'?'Floating':g.status==='assigned'?`For ${escHtml(g.assigned||'?')}` : 'Given';
+    return `<div class="gift-card">
+      <div class="gift-header">
+        <div class="gift-name">${escHtml(g.name)}</div>
+        <span class="badge ${sc}">${sl}</span>
+        ${g.cat?`<span class="badge badge-gray">${escHtml(g.cat)}</span>`:''}
+      </div>
+      <div class="gift-meta">${g.source?escHtml(g.source):''}${g.source&&g.value?' · ':''}${g.value?`~$${g.value}`:''}</div>
+      ${g.notes?`<div style="font-size:13px;color:var(--ink-3);margin-top:6px;">${escHtml(g.notes)}</div>`:''}
+      <div class="gift-actions">
+        ${g.status!=='given'?`<button class="action-btn" onclick="markGiven(${idx})">Mark as given</button>`:''}
+        <button class="action-btn danger" onclick="deleteGift(${idx})">Remove</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function saveGift() {
+  const name = (document.getElementById('g-name').value||'').trim();
+  if(!name) { alert('Item name is required'); return; }
+  gifts.push({
+    name, cat: document.getElementById('g-cat').value,
+    source: document.getElementById('g-source').value,
+    value: document.getElementById('g-value').value,
+    status: document.getElementById('g-status').value,
+    assigned: document.getElementById('g-assigned').value,
+    notes: document.getElementById('g-notes').value
+  });
+  ['g-name','g-value','g-notes'].forEach(id => document.getElementById(id).value='');
+  ['g-cat','g-source'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('g-status').value='floating';
+  document.getElementById('g-assigned').value='';
+  save(); renderInventory(); closeModal('gift-modal');
+}
+
+function markGiven(idx) { gifts[idx].status='given'; save(); renderInventory(); }
+function deleteGift(idx) { if(!confirm('Remove this gift?')) return; gifts.splice(idx,1); save(); renderInventory(); }
+
+function renderCards() {
+  const el = document.getElementById('cards-list');
+  if(!cards.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">&#128140;</div><div class="empty-title">No cards in stock</div><div class="empty-sub">Track what cards you have on hand so you\'re never caught without one</div></div>`;
+    return;
+  }
+  el.innerHTML = cards.map((c,i) => `<div class="card-item">
+    <div class="card-item-info">
+      <div class="card-item-name">${escHtml(c.type)}</div>
+      ${c.desc?`<div class="card-item-desc">${escHtml(c.desc)}</div>`:''}
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div class="qty-control">
+        <button class="qty-btn" onclick="adjustCard(${i},-1)">−</button>
+        <div class="qty-num">${c.qty}</div>
+        <button class="qty-btn" onclick="adjustCard(${i},1)">+</button>
+      </div>
+      <button class="action-btn danger" onclick="deleteCard(${i})">✕</button>
+    </div>
+  </div>`).join('');
+}
+
+function saveCard() {
+  const type = document.getElementById('c-type').value;
+  if(!type) { alert('Card type is required'); return; }
+  const qty = parseInt(document.getElementById('c-qty').value)||1;
+  const existing = cards.find(c => c.type===type);
+  if(existing) { existing.qty = (parseInt(existing.qty)||0)+qty; }
+  else { cards.push({ type, desc: document.getElementById('c-desc').value, qty }); }
+  save(); renderCards(); closeModal('card-modal');
+}
+
+function adjustCard(i, d) { cards[i].qty = Math.max(0, (parseInt(cards[i].qty)||0)+d); save(); renderCards(); }
+function deleteCard(i) { cards.splice(i,1); save(); renderCards(); }
+
+function renderUpcoming() {
+  const now = new Date();
+  const upcoming = [];
+  people.forEach(p => {
+    if(!p.bday) return;
+    const [m,d] = p.bday.split('/').map(Number);
+    if(!m||!d) return;
+    let next = new Date(now.getFullYear(), m-1, d);
+    if(next <= now) next = new Date(now.getFullYear()+1, m-1, d);
+    const diff = Math.ceil((next-now)/864e5);
+    upcoming.push({ person: p.name, idx: people.indexOf(p), label:'Birthday', diff, interests: p.interests||[], hasGift: gifts.some(g=>g.assigned===p.name&&g.status!=='given') });
+  });
+  upcoming.sort((a,b) => a.diff-b.diff);
+  const el = document.getElementById('upcoming-list');
+  if(!upcoming.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">&#127881;</div><div class="empty-title">No upcoming occasions</div><div class="empty-sub">Add birthdays to people's profiles and they'll show up here with a countdown</div></div>`;
+    return;
+  }
+  el.innerHTML = upcoming.slice(0,15).map(o => {
+    const urgency = o.diff<=7 ? 'urgency-soon' : o.diff<=30 ? 'urgency-near' : '';
+    const dayLabel = o.diff===0 ? 'Today!' : o.diff===1 ? 'Tomorrow' : `In ${o.diff} days`;
+    const dc = o.diff<=7 ? 'badge-coral' : o.diff<=30 ? 'badge-amber' : 'badge-gray';
+    return `<div class="upcoming-card ${urgency}" onclick="viewPerson(${o.idx});switchTabByName('people')">
+      <div class="avatar" style="width:40px;height:40px;font-size:13px;${avatarStyle(o.idx)}">${initials(o.person)}</div>
+      <div class="upcoming-info">
+        <div class="upcoming-name">${escHtml(o.person)}</div>
+        <div class="upcoming-occ">${o.label} · ${o.hasGift?'<span style="color:var(--teal)">Gift ready</span>':'<span style="color:var(--coral)">No gift yet</span>'}</div>
+        ${o.interests.length?`<div class="upcoming-interests">Into: ${o.interests.slice(0,4).map(escHtml).join(', ')}</div>`:''}
+      </div>
+      <span class="badge ${dc}">${dayLabel}</span>
+    </div>`;
+  }).join('');
+}
+
+function switchTabByName(tab) {
+  const btns = document.querySelectorAll('.tab-btn');
+  const tabs = ['people','inventory','cards','upcoming','settings'];
+  const idx = tabs.indexOf(tab);
+  if(idx >= 0) switchTab(tab, btns[idx]);
+}
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' '+type : '');
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function renderDataSummary() {
+  const el = document.getElementById('data-summary');
+  if(!el) return;
+  const floatingGifts = gifts.filter(g => g.status==='floating').length;
+  const assignedGifts = gifts.filter(g => g.status==='assigned').length;
+  const givenGifts = gifts.filter(g => g.status==='given').length;
+  const totalCards = cards.reduce((s,c) => s+(parseInt(c.qty)||0), 0);
+  el.innerHTML = `
+    <strong>${people.length}</strong> ${people.length===1?'person':'people'} &nbsp;·&nbsp;
+    <strong>${floatingGifts}</strong> floating gift${floatingGifts===1?'':'s'} &nbsp;·&nbsp;
+    <strong>${assignedGifts}</strong> assigned &nbsp;·&nbsp;
+    <strong>${givenGifts}</strong> given &nbsp;·&nbsp;
+    <strong>${totalCards}</strong> card${totalCards===1?'':'s'} in stock
+  `;
+}
+
+function exportData() {
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    people, gifts, cards
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const date = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `gifthq-backup-${date}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Backup downloaded!', 'success');
+}
+
+function handleImportFile(e) {
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if(!data.people || !data.gifts || !data.cards) throw new Error('Invalid format');
+      const pCount = data.people.length;
+      const gCount = data.gifts.length;
+      const cCount = data.cards.length;
+      const confirmed = confirm(`This will replace your current data with:\n\n• ${pCount} people\n• ${gCount} gifts\n• ${cCount} card types\n\nContinue?`);
+      if(!confirmed) { e.target.value=''; return; }
+      people = data.people;
+      gifts = data.gifts;
+      cards = data.cards;
+      save();
+      renderPeople();
+      renderDataSummary();
+      showToast(`Restored ${pCount} people, ${gCount} gifts`, 'success');
+    } catch(err) {
+      showToast('Could not read that file', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+function clearAllData() {
+  const confirmed = confirm('This will permanently delete ALL your people, gifts, and cards.\n\nMake sure you have exported a backup first.\n\nAre you sure?');
+  if(!confirmed) return;
+  const confirmed2 = confirm('Last chance — delete everything?');
+  if(!confirmed2) return;
+  people = []; gifts = []; cards = [];
+  save(); renderPeople(); renderDataSummary();
+  showToast('All data cleared', 'error');
+}
+
+// Close modals on overlay click
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => { if(e.target === overlay) overlay.classList.remove('open'); });
+});
+
+// PWA Install
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const banner = document.getElementById('install-banner');
+  if(banner) banner.classList.add('show');
+});
+
+document.getElementById('install-yes').addEventListener('click', async () => {
+  if(!deferredInstallPrompt) return;
+  deferredInstallPrompt.prompt();
+  const { outcome } = await deferredInstallPrompt.userChoice;
+  deferredInstallPrompt = null;
+  document.getElementById('install-banner').classList.remove('show');
+});
+
+document.getElementById('install-no').addEventListener('click', () => {
+  document.getElementById('install-banner').classList.remove('show');
+  localStorage.setItem('ghq_install_dismissed','1');
+});
+
+if(localStorage.getItem('ghq_install_dismissed')) {
+  const b = document.getElementById('install-banner');
+  if(b) b.style.display='none';
+}
+
+// Service Worker
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+}
+
+updateStats();
+renderPeople();
+</script>
+</body>
+</html>
